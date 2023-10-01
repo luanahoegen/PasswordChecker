@@ -23,12 +23,4 @@ public class AESCBCWithSHA256 {
         cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
         return cipher.doFinal(plaintext);
     }
-
-    public static byte[] decryptAES_CBC(byte[] ciphertext, byte[] key, byte[] iv) throws Exception {
-        SecretKeySpec keySpec = new SecretKeySpec(key, "AES");
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        IvParameterSpec ivSpec = new IvParameterSpec(iv);
-        cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
-        return cipher.doFinal(ciphertext);
-    }
 }

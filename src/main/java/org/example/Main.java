@@ -1,6 +1,7 @@
 package org.example;
 
 import com.google.gson.GsonBuilder;
+import org.bouncycastle.util.encoders.Hex;
 import org.example.dto.CredentialsDTO;
 import org.example.dto.Usuario;
 import org.example.utils.AESCBCWithSHA256;
@@ -15,29 +16,27 @@ import static org.example.utils.PBKDF2Util.generateDerivedKey;
 public class Main {
 
     public static void main(String[] args)  {
-        while (true) {
-            Scanner scanner = new Scanner(System.in);
-            System.out.println("Escolha uma opção");
-            System.out.println("1. Cadastro");
-            System.out.println("2. Login");
-            System.out.println("2. Gerar Chave e IV");
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Escolha uma opção");
+        System.out.println("1. Cadastro");
+        System.out.println("2. Login");
+        System.out.println("3. Gerar Chave e IV");
 
-            int escolha = scanner.nextInt();
+        int escolha = scanner.nextInt();
 
-            switch (escolha){
-                case 1:
-                    cadastro();
-                    break;
-                case 2:
-                    login();
-                    break;
-                case 3:
-                    try {
-                        AESEBCUtils.generate();
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-            }
+        switch (escolha){
+            case 1:
+                cadastro();
+                break;
+            case 2:
+                login();
+                break;
+            case 3:
+                try {
+                    AESEBCUtils.generate();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
         }
     }
 
@@ -53,7 +52,7 @@ public class Main {
         String chaveDerivada = chaveDerivada(usuario.getSenha(), saltoAleatorio);
         FileUtils fileUtils = new FileUtils();
         usuario.setSalt(saltoAleatorio);
-        usuario.setSenha(chaveDerivada);
+        usuario.setSenha(Hex.toHexString(criptografaSenha(chaveDerivada)));
         usuario.setHash256(geraHash256(usuario));
         fileUtils.grava(new GsonBuilder().create().toJson(usuario));
     }
@@ -70,7 +69,7 @@ public class Main {
         Usuario usuario = nomeSenhaUsuario();
         Usuario usuarioFromFile = getUsuarioFromFile();
         String chaveDerivada = chaveDerivada(usuario.getSenha(), usuarioFromFile.getSalt());
-        usuario.setSenha(chaveDerivada);
+        usuario.setSenha(Hex.toHexString(criptografaSenha(chaveDerivada)));
 
         String hashUsuarioLogin = geraHash256(usuario);
 
@@ -118,6 +117,19 @@ public class Main {
         String usuarioSenha = usuario.getNome() + usuario.getSenha();
         try {
             return AESCBCWithSHA256.encryptAES_CBC(usuarioSenha.getBytes(),
+                    AESCBCWithSHA256.deriveAESKey(credentials.getKey()),
+                    AESCBCWithSHA256.deriveAESKey(credentials.getIv())
+            );
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static byte[] criptografaSenha(String senha){
+        FileUtils fileUtils = new FileUtils();
+        CredentialsDTO credentials = fileUtils.getCredentialsFromFile();
+        try {
+            return AESCBCWithSHA256.encryptAES_CBC(senha.getBytes(),
                     AESCBCWithSHA256.deriveAESKey(credentials.getKey()),
                     AESCBCWithSHA256.deriveAESKey(credentials.getIv())
             );
