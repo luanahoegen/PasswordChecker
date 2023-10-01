@@ -1,0 +1,1 @@
+{"nome":"Nelson","senha":"bd5e27f2d49b5881d3be78f7323d21e6","salt":"be370b1b03bf4e012df26ca032b693f1","hash256":"76009c30f7c9bb26b7cb34a54c6161cd487f6e189f34dd26c9547972c0382cd4"}
